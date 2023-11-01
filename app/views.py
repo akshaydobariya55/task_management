@@ -3,7 +3,9 @@ from .forms import SignUpForm , loginform , Add_Project_Form , Add_Task_Form
 from django.views.generic.base import RedirectView
 from django.contrib import messages
 from django.contrib.auth import authenticate , login 
-from .models import User , Project , Task
+from .models import User , Project , Task ,Comment
+from django.views import View
+
 # Create your views here.
 
 
@@ -47,11 +49,16 @@ def user_login(request):
 
 
 def developer_home(request):
-    return render(request,'app/developer_home.html')
+    comment =Comment.objects.all()
+    return render(request,'app/developer_home.html',{'comment':comment})
 
 def manager_home(request):
-    tasks = Task.objects.all()
-    return render(request,'app/manager_home.html',{'tasks':tasks})
+    if request.user.is_authenticated:
+        name = request.user
+        tasks = Task.objects.filter(list_of_team_member=name)
+        return render(request,'app/manager_home.html',{'tasks':tasks})
+    else:
+        return HttpResponseRedirect('/login/')
 
 def admin_home(request):
     projects = Project.objects.all()
@@ -60,12 +67,13 @@ def admin_home(request):
 
 def add_project(request):
     if request.method == "POST":
-        form = Add_Project_Form(request.POST, request.FILES)
+        form = Add_Project_Form(request.POST)
         if form.is_valid():
             form.save()
             return redirect('/admin_home/')
     else:
         form = Add_Project_Form()
+        form.fields['list_of_team_member'].queryset =User.objects.filter(is_manager=True)
     return render(request,'app/add_project.html',{'form':form})
 
 def add_task(request):
@@ -76,6 +84,7 @@ def add_task(request):
             return redirect('/manager_home/')
     else:
         form = Add_Task_Form()
+        form.fields['select_developer'].queryset =User.objects.filter(is_developer=True)
     return render(request,'app/add_task.html',{'form':form})
 
 
@@ -92,3 +101,28 @@ class taskdeleteview(RedirectView):
         del_id = kwargs['id']
         Task.objects.get(pk=del_id).delete()
         return super().get_redirect_url(*args,**kwargs)
+    
+def projectupdateview(request , id):
+        if request.method == 'POST':
+            pi = Project.objects.get(pk=id)
+            form = Add_Project_Form(request.POST,instance=pi)
+            if form.is_valid():
+                form.save()
+            return HttpResponseRedirect('/admin_home/')
+        else:
+            pi = Project.objects.get(pk=id)
+            form = Add_Project_Form(instance=pi)
+        return render(request,'app/update_project.html',{'form':form})
+
+def taskupdateview(request , id):
+        if request.method == 'POST':
+            pi = Task.objects.get(pk=id)
+            form = Add_Task_Form(request.POST,instance=pi)
+            if form.is_valid():
+                form.save()
+            return HttpResponseRedirect('/manager_home/')
+        else:
+            pi = Task.objects.get(pk=id)
+            form = Add_Task_Form(instance=pi)
+        return render(request,'app/update_task.html',{'form':form})
+   

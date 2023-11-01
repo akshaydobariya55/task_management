@@ -27,6 +27,7 @@
                   <tr>
                     <th scope="col">Title</th>
                     <th scope="col">Description</th>
+                    <th scope="col">Select Developer</th>
                     <th scope="col">Priority</th>
                     <th scope="col">Status</th>
                     <th scope="col">Action</th>
@@ -37,6 +38,7 @@
                   <tr>
                     <th scope="row">{{p.title}}</th>
                     <td>{{p.description}}</td>
+                    <td>{{p.select_developer}}
                     <td>{{p.priority}}</td>
                     <td>{{p.status}}</td>
                     <td>
@@ -47,7 +49,7 @@
                         </form>
                     </td>
                     <td>
-                        <a href="#" class="btn btn-warning btn-smx">Edit</a>
+                        <a href="{% url "updatetask" p.id %}" class="btn btn-warning btn-smx">Edit</a>
                   </tr>
                   {% endfor %}  
                 </tbody>
@@ -57,8 +59,5 @@
             {% endif %}
            
         </div>
-      
-
-    
 </body>
 </html>

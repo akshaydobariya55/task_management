@@ -17,6 +17,7 @@ class Project(models.Model):
     end_date = models.DateField(null=False)
     list_of_team_member = models.ForeignKey(User,on_delete=models.CASCADE)
 
+
 Priority_choice = (
     ('Low','Low'),
     ('Medium','medium'),
@@ -34,3 +35,13 @@ class Task(models.Model):
     description = models.CharField(max_length=255)
     priority = models.CharField(max_length=50,choices=Priority_choice)
     status = models.CharField(max_length=50,choices=status_choice)
+    select_developer =models.ForeignKey(User,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+
+class Comment(models.Model):
+    # title = models.ForeignKey(Task,on_delete=models.CASCADE)
+    title =models.ForeignKey(Task,on_delete=models.CASCADE)
+    issue = models.CharField(max_length=255)

@@ -33,4 +33,5 @@ class Add_Project_Form(forms.ModelForm):
 class Add_Task_Form(forms.ModelForm):
     class Meta:
         model = Task
-        fields =['title','description','priority','status']
+        fields =['title','description','select_developer','priority','status']
+        
