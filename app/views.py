@@ -2,9 +2,14 @@ from django.shortcuts import render,redirect,HttpResponseRedirect
 from .forms import SignUpForm , loginform , Add_Project_Form , Add_Task_Form
 from django.views.generic.base import RedirectView
 from django.contrib import messages
-from django.contrib.auth import authenticate , login 
+from django.contrib.auth import authenticate , login ,logout
 from .models import User , Project , Task ,Comment
 from django.views import View
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
+
 
 # Create your views here.
 
@@ -49,15 +54,28 @@ def user_login(request):
 
 
 def developer_home(request):
-    comment =Comment.objects.all()
-    return render(request,'app/developer_home.html',{'comment':comment})
+    if request.user.is_developer:
+        name = request.user
+        tasks = Task.objects.filter(select_developer=name)
+        comment =Comment.objects.all()
+    return render(request,'app/developer_home.html',{'comment':comment,'tasks':tasks})
 
 def manager_home(request):
-    if request.user.is_authenticated:
+    if request.user.is_manager:
         name = request.user
-        tasks = Task.objects.filter(list_of_team_member=name)
-        return render(request,'app/manager_home.html',{'tasks':tasks})
+        project = Project.objects.filter(list_of_team_member=name)
+        tasks = Task.objects.all().order_by('status')
+        p = Paginator(tasks, 3)
+        page_number = request.GET.get('page')
+        try:
+            page_obj=p.get_page(page_number)
+        except PageNotAnInteger:
+            page_obj =p.page(1)
+        except EmptyPage:
+            page_obj=p.page(p.num_pages)
+        return render(request,'app/manager_home.html',{'project':project,'tasks':tasks,'page_obj':page_obj})
     else:
+
         return HttpResponseRedirect('/login/')
 
 def admin_home(request):
@@ -125,4 +143,19 @@ def taskupdateview(request , id):
             pi = Task.objects.get(pk=id)
             form = Add_Task_Form(instance=pi)
         return render(request,'app/update_task.html',{'form':form})
-   
+
+
+def commentupdateview(request,id):
+    if request.method == 'POST':
+        pi=Task.objects.get(pk=id)
+        form = Add_Task_Form(request.POST,instance=pi)
+        if form.is_valid():
+            form.save()
+        return HttpResponseRedirect('/developer_home/')
+    else:
+        pi = Task.objects.get(pk=id)
+        form=Add_Task_Form(instance=pi)
+    return render(request,'app/update_task.html',{'form':form})
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect('/login/')

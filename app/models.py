@@ -45,3 +45,5 @@ class Comment(models.Model):
     # title = models.ForeignKey(Task,on_delete=models.CASCADE)
     title =models.ForeignKey(Task,on_delete=models.CASCADE)
     issue = models.CharField(max_length=255)
+    status = models.CharField(max_length=50,choices=status_choice)
+    
