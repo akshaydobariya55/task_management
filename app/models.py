@@ -12,7 +12,7 @@ class User(AbstractUser):
 class Project(models.Model):
     id = models.IntegerField(auto_created=True,primary_key=True)
     name = models.CharField(max_length=255)
-    description = models.TextField(max_length=255)
+    description = models.CharField(max_length=255)
     start_date = models.DateField(null=False)
     end_date = models.DateField(null=False)
     list_of_team_member = models.ForeignKey(User,on_delete=models.CASCADE)
